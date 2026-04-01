@@ -1,8 +1,105 @@
+import 'dart:core';
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
+import 'package:untitled_today/add_course.dart';
+import 'package:untitled_today/view_skill_demand.dart';
+import 'app_data.dart';
+
+
+
+
+
+////// Yaha JSON se data lenge 'BarChart' ke liye //////
+
+final data = {
+  "Python": 120,
+  "DSA": 100,
+  "SQL": 90,
+  "ML": 60,
+  "DA": 40,
+};
+
+////// Ab Data ke value ke anusaar isse decending order me sort kareenge //////
+final sorted = data.entries.toList()
+  ..sort((a, b) => b.value.compareTo(a.value));
+
+////// Ab top4 value ko alag kar lenge //////
+final top4 = sorted.take(4).toList();
+
+
+final skillTrends = {
+  "Python": [10, 50, 50, 30, 120],
+  "DSA": [30, 20, 90, 20, 100],
+  "SQL": [20, 30, 60, 30, 90],
+  "ML": [30, 80, 20, 70, 60],
+};
+
+final skills = {
+  for (var e in top4)
+    e.key: skillTrends[e.key] ?? [0, 0, 0, 0, 0],
+};
+
+Color _getColor(int index) {
+  switch (index) {
+    case 0: return Color(0xff5b6ef5);
+    case 1: return Color(0xff50c878);
+    case 2: return Color(0xffffa726);
+    case 3: return Color(0xff9c27b0);
+    default: return Colors.grey;
+  }
+}
+
+////// Declaring class for '_courseCard()' //////
+class SuggestedCourse {
+  final IconData iconName;
+  final String title;
+  final String duration;
+  final bool seatsAvailability;
+  final Color color;
+
+  SuggestedCourse({required this.iconName, required this.title, required this.duration, required this.color,required this.seatsAvailability});
+
+}
+
+
+
+
+
+////// Creating a list to store 'class SuggestedCourse()' data //////
+////// Issi list me backend ke data ko store karenge //////
+List<SuggestedCourse> suggestedCourses = [
+  SuggestedCourse(iconName: Icons.bar_chart, title: "Power BI", duration: "12", color: Colors.blue, seatsAvailability: true),
+  SuggestedCourse(iconName: Icons.bar_chart, title: "Power BI", duration: "12", color: Colors.blue, seatsAvailability: true),
+  SuggestedCourse(iconName: Icons.bar_chart, title: "Power BI", duration: "12", color: Colors.blue, seatsAvailability: true),
+  SuggestedCourse(iconName: Icons.bar_chart, title: "Power BI", duration: "12", color: Colors.blue, seatsAvailability: true),
+];
+
+////// Declaring class for '_studentCard()' //////
+class Student{
+  final String name;
+  final String qualification;
+  final double matchPercent;
+  final String districtEntered;
+  Student({required this.name, required this.qualification, required this.matchPercent, required this.districtEntered});
+}
+
+////// Creating a list to store 'class Student' data //////
+////// Yahi pe data ko preference ke hisaab se add kiya jaayega //////
+List<Student> students = [
+  Student(name:"Amarjeet", qualification: 'Web Developer', matchPercent: 80, districtEntered:"Patna"),
+  Student(name:"Rajneesh", qualification: 'App Developer', matchPercent: 85, districtEntered:"Begusarai"),
+  Student(name:"Yuvraj", qualification: 'Game Developer', matchPercent: 70, districtEntered:"Begusarai"),
+  Student(name:"Yuvraj", qualification: 'Game Developer', matchPercent: 70, districtEntered:"Begusarai"),
+
+];
+
 
 class InstituteDashboard extends StatelessWidget {
   const InstituteDashboard({super.key});
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +132,9 @@ class InstituteDashboard extends StatelessWidget {
 
               Row(
                 children: [
-                  Expanded(child: _actionCard("Add Course", "Add Course")),
+                  Expanded(child: _actionCard(context,"Add Course", "Add Course")),
                   const SizedBox(width: 10),
-                  Expanded(child: _actionCard("View Skill Demand", "View Now")),
+                  Expanded(child: _actionCard(context,"View Skill Demand", "View Now")),
                 ],
               ),
 
@@ -47,7 +144,7 @@ class InstituteDashboard extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              _dropdownCard(),
+              _dropdownCard(context),
 
               const SizedBox(height: 20),
 
@@ -59,11 +156,20 @@ class InstituteDashboard extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              Row(
+              GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 2.0,
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
                 children: [
-                  Expanded(child: _courseCard("Power BI", "10 hrs", Icons.bar_chart, Colors.yellow)),
-                  const SizedBox(width: 10),
-                  Expanded(child: _courseCard("Tableau", "12 hrs", Icons.dashboard, Colors.blue)),
+                  ...List.generate(suggestedCourses.length,
+                          (i) => _courseCard(suggestedCourses[i].title, suggestedCourses[i].duration, suggestedCourses[i].iconName, suggestedCourses[i].color,suggestedCourses[i].seatsAvailability),
+                      ),
+                  // Expanded(child: _courseCard("Power BI", "10 hrs", Icons.bar_chart, Colors.yellow)),
+                  // const SizedBox(width: 10),
+                  // Expanded(child: _courseCard("Tableau", "12 hrs", Icons.dashboard, Colors.blue)),
                 ],
               ),
 
@@ -73,7 +179,7 @@ class InstituteDashboard extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
 
-              ...List.generate(3, (i) => _studentCard()),
+              ...List.generate(students.length, (i) => _studentCard(students[i].name, students[i].qualification, students[i].matchPercent, students[i].districtEntered)),
 
               const SizedBox(height: 20),
 
@@ -116,14 +222,19 @@ class InstituteDashboard extends StatelessWidget {
   }
 
   /// ACTION CARD
-  Widget _actionCard(String title, String btn) {
+  Widget _actionCard(BuildContext context, String title, String btn) {
     return _card(
       child: Column(
         children: [
           Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => title == "Add Course" ? AddCoursePage(): ViewSkillDemandPage()),
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2F5D9F),
               foregroundColor: Colors.white,
@@ -141,6 +252,8 @@ class InstituteDashboard extends StatelessWidget {
 
   /// CHART SECTION (FINAL POLISH)
   Widget _insightCard() {
+    final max = top4
+        .map((e) => e.value).reduce((a, b) => a > b ? a : b);
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,13 +274,21 @@ class InstituteDashboard extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: BarChart(
+
                       BarChartData(
                         alignment: BarChartAlignment.spaceAround,
-                        maxY: 200,
+                        barTouchData: BarTouchData(
+                          touchTooltipData: BarTouchTooltipData(
+                            tooltipBgColor: Colors.black26.withOpacity(0.4),
+                            tooltipPadding: EdgeInsets.all(8),
+                            tooltipMargin: 8,
+                          ),
+                        ),
+
+                        maxY: max + 20,
                         groupsSpace: 20,
                         gridData: FlGridData(show: false),
                         borderData: FlBorderData(show: false),
-
                         titlesData: FlTitlesData(
                           leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                           rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -177,30 +298,26 @@ class InstituteDashboard extends StatelessWidget {
                             sideTitles: SideTitles(
                               showTitles: true,
                               reservedSize: 28,
-                              getTitlesWidget: (value, meta) {
-                                switch (value.toInt()) {
-                                  case 0:
-                                    return _label("Py");
-                                  case 1:
-                                    return _label("SQL");
-                                  case 2:
-                                    return _label("ML");
-                                  case 3:
-                                    return _label("DA");
-                                  default:
-                                    return const SizedBox();
+                              getTitlesWidget: (value, TitleMeta) {
+                                final index =  value.toInt();
+
+                                if (index >= 0 && index < top4.length) {
+                                  return _label(top4[index].key);
                                 }
-                              },
+                                return const SizedBox();
+                              }
                             ),
                           ),
                         ),
 
-                        barGroups: [
-                          _barData(0, 180),
-                          _barData(1, 140),
-                          _barData(2, 100),
-                          _barData(3, 80),
-                        ],
+                        barGroups: top4.asMap().entries.map((e) {
+                          final index = e.key;
+                          final entry = e.value;
+                          return _barData(
+                            index,
+                            entry.value.toDouble(),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
@@ -249,20 +366,21 @@ class InstituteDashboard extends StatelessWidget {
                           ),
                         ),
 
-                        lineBarsData: [
-                          LineChartBarData(
+                        lineBarsData: skills.entries.map((entry) {
+                          final index = skills.keys.toList().indexOf(entry.key);
+                          return LineChartBarData(
                             isCurved: true,
-                            spots: const [
-                              FlSpot(0, 10),
-                              FlSpot(1, 50),
-                              FlSpot(2, 50),
-                              FlSpot(3, 30),
-                              FlSpot(4, 80),
-                            ],
-                            color: const Color(0xFF2F5D9F),
+                            curveSmoothness: 0.3,
+                            color: _getColor(index).withOpacity(0.8),
+                            barWidth: 2,
+
+                            spots: entry.value.asMap().entries.map((e) {
+                              return FlSpot(e.key.toDouble(), e.value.toDouble());
+                            }).toList(),
+
                             dotData: FlDotData(show: false),
-                          )
-                        ],
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
@@ -289,7 +407,7 @@ class InstituteDashboard extends StatelessWidget {
         BarChartRodData(
           toY: y,
           width: 8,
-          color: const Color(0xFF2F5D9F),
+          color: _getColor(x),
           borderRadius: BorderRadius.circular(4),
         ),
       ],
@@ -297,7 +415,7 @@ class InstituteDashboard extends StatelessWidget {
   }
 
   /// COURSE CARD
-  Widget _courseCard(String title, String duration, IconData icon, Color color) {
+  Widget _courseCard(String title, String duration, IconData icon, Color color, bool isSeatAvailable) {
     return _card(
       child: Row(
         children: [
@@ -316,8 +434,10 @@ class InstituteDashboard extends StatelessWidget {
               Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
               Text("Duration: $duration",
                   style: const TextStyle(color: Colors.grey, fontSize: 12)),
-              const Text("Seats available",
-                  style: TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(
+                  isSeatAvailable ? "Seats available" : "Seats not available",
+                  style: TextStyle(color: Colors.grey, fontSize: 12)
+              ),
             ],
           )
         ],
@@ -326,7 +446,7 @@ class InstituteDashboard extends StatelessWidget {
   }
 
   /// STUDENT CARD
-  Widget _studentCard() {
+  Widget _studentCard(String _name, String _qualification, double _matchPercent, String _districtEntered) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       child: _card(
@@ -334,15 +454,15 @@ class InstituteDashboard extends StatelessWidget {
           children: [
             const CircleAvatar(child: Icon(Icons.person)),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Amarjeet Kumar",
+                  Text("$_name",
                       style: TextStyle(fontWeight: FontWeight.w500, letterSpacing: 0.5)),
-                  Text("Advanced Data Analytics",
+                  Text("$_qualification",
                       style: TextStyle(color: Colors.grey)),
-                  Text("Bhagalpur",
+                  Text("$_districtEntered",
                       style: TextStyle(color: Colors.grey)),
                 ],
               ),
@@ -350,11 +470,11 @@ class InstituteDashboard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: (_matchPercent >= 80) ? Colors.green : (_matchPercent >= 60 && _matchPercent < 80 ? Colors.orange : Colors.red),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Text("90%",
-                  style: TextStyle(color: Colors.white)),
+              child: Text("$_matchPercent%",
+                  style: const TextStyle(color: Colors.white)),
             )
           ],
         ),
@@ -363,14 +483,17 @@ class InstituteDashboard extends StatelessWidget {
   }
 
   /// DROPDOWN
-  Widget _dropdownCard() {
+  Widget _dropdownCard(BuildContext context) {
     return _card(
       child: DropdownButtonFormField(
-        items: const [
-          DropdownMenuItem(value: "Bhagalpur", child: Text("Bhagalpur")),
-        ],
-        onChanged: (v) {},
-        decoration: const InputDecoration(labelText: "District"),
+        value: context.watch<AppState>().district,
+        items: context.watch<AppState>().districtList.map((d) => DropdownMenuItem(
+          value: d,
+          child: Text(d),
+        )).toList(),
+        onChanged: (value) {
+          context.read<AppState>().setDistrict(value!);
+        },
       ),
     );
   }

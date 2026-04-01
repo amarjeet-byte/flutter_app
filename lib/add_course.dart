@@ -295,7 +295,7 @@ class _AddCoursePageState extends State<AddCoursePage> {
 
         child: isLoading
             ? const CircularProgressIndicator(color: Colors.white)
-            : const Text("Submit"),
+            : const Text("Submit", style: TextStyle(color: Colors.white),),
       ),
     );
   }

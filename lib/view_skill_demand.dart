@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
+
+import 'app_data.dart';
 
 class ViewSkillDemandPage extends StatefulWidget {
   const ViewSkillDemandPage({super.key});
@@ -340,13 +343,14 @@ class _ViewSkillDemandPageState extends State<ViewSkillDemandPage> {
       Column(
         children: [
           DropdownButtonFormField(
-            value: district,
-            items: const [
-              DropdownMenuItem(value: "Bhagalpur", child: Text("Bhagalpur")),
-              DropdownMenuItem(value: "Patna", child: Text("Patna")),
-            ],
-            onChanged: (v) => setState(() => district = v!),
-            decoration: const InputDecoration(labelText: "District"),
+            value: context.watch<AppState>().district,
+            items: context.watch<AppState>().districtList.map((d) => DropdownMenuItem(
+              value: d,
+              child: Text(d),
+            )).toList(),
+            onChanged: (value) {
+              context.read<AppState>().setDistrict(value!);
+            },
           ),
           const SizedBox(height: 15),
           DropdownButtonFormField(

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
+import 'package:untitled_today/job_requirement.dart';
+import 'package:untitled_today/view_candidate_profile.dart';
+import 'app_data.dart';
 
 class CompanyDashboard extends StatelessWidget {
   const CompanyDashboard({super.key});
@@ -30,16 +34,16 @@ class CompanyDashboard extends StatelessWidget {
               _header(),
               const SizedBox(height: 15),
 
-              _postSkill(),
+              _postSkill(context),
               const SizedBox(height: 15),
 
-              _candidateSection(),
+              _candidateSection(context),
               const SizedBox(height: 15),
 
               _chartCard(),
               const SizedBox(height: 15),
 
-              _filterCard(),
+              _filterCard(context),
               const SizedBox(height: 15),
 
               _logoutCard(),
@@ -81,7 +85,7 @@ class CompanyDashboard extends StatelessWidget {
   }
 
   /// POST
-  Widget _postSkill() {
+  Widget _postSkill(BuildContext context) {
     return _card(
       child: Column(
         children: [
@@ -89,7 +93,12 @@ class CompanyDashboard extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push (
+                context,
+                MaterialPageRoute(builder: (context) => JobRequirementPage()),
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2F5D9F),
               foregroundColor: Colors.white,
@@ -105,7 +114,7 @@ class CompanyDashboard extends StatelessWidget {
   }
 
   /// CANDIDATES
-  Widget _candidateSection() {
+  Widget _candidateSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -115,12 +124,12 @@ class CompanyDashboard extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         ),
         const SizedBox(height: 10),
-        ...List.generate(3, (i) => _candidateCard()),
+        ...List.generate(3, (i) => _candidateCard(context)),
       ],
     );
   }
 
-  Widget _candidateCard() {
+  Widget _candidateCard(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: _card(
@@ -153,7 +162,12 @@ class CompanyDashboard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CandidateProfilePage()),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2F5D9F),
                     foregroundColor: Colors.white,
@@ -280,14 +294,16 @@ class CompanyDashboard extends StatelessWidget {
   }
 
   /// FILTER
-  Widget _filterCard() {
+  Widget _filterCard(BuildContext context) {
     return _card(
       child: Column(
         children: [
           DropdownButtonFormField(
-            items: const [
-              DropdownMenuItem(value: "Bhagalpur", child: Text("Bhagalpur")),
-            ],
+            value: context.watch<AppState>().district,
+            items: context.watch<AppState>().districtList.map((d) => DropdownMenuItem(
+              value: d,
+              child: Text(d),
+            )).toList(),
             onChanged: (v) {},
             decoration: const InputDecoration(labelText: "District"),
           ),
